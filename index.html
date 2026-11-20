@@ -50,8 +50,26 @@ async function partV(){const{data:r}=await sb.from('requests').select('*').order
  return `<div class="card"><b>🏗️ ساختمان خودت رو پیشنهاد بده</b><p class="sub">با هزینهٔ خودت می‌سازی و اسمت روی نقشه می‌ماند.</p><input id="rh" placeholder="آیدی اینستاگرام" maxlength="40"><input id="rb" placeholder="نام ساختمان" maxlength="60"><button class="w" onclick="reqB()">ثبت درخواست</button></div>
  <div class="card"><b>💬 نظر یا پیشنهاد</b><input id="cm" placeholder="نظرت رو بنویس" maxlength="300"><button class="w" onclick="cmB()">ارسال</button></div>
  ${(r||[]).map(x=>`<div class="card row"><span>🏷️ <b>${esc(x.building)}</b> · @${esc(x.handle)}</span><span class="bd">${S[x.status]}</span></div>`).join('')}`}
+async function cardCanvas(z,home){await document.fonts.load('700 60px Vazirmatn').catch(()=>{});
+ const c=document.createElement('canvas');c.width=1080;c.height=1920;const x=c.getContext('2d'),F='Vazirmatn,Tahoma,sans-serif';
+ const g=x.createLinearGradient(0,0,1080,1920);g.addColorStop(0,'#1c6b3a');g.addColorStop(1,'#0b3a5e');x.fillStyle=g;x.fillRect(0,0,1080,1920);
+ x.direction='rtl';x.textAlign='center';x.fillStyle='#fff';
+ x.font='220px '+F;x.fillText('🏛️',540,520);
+ x.font='700 64px '+F;x.fillText('کارت شهروندی سوران‌شهر',540,680);
+ x.font='800 100px '+F;x.fillText(z.name,540,880);
+ x.fillStyle='#ffd23f';x.font='800 150px '+F;x.fillText('شمارهٔ '+fa(z.number),540,1100);
+ x.fillStyle='#fff';x.font='700 72px '+F;x.fillText(home?'ساختمان '+fa(Math.ceil(z.number/50))+' 🏠':'در لیست انتظار خانه ⏳',540,1260);
+ x.font='400 46px '+F;x.fillStyle='#cfe6d6';x.fillText('تو هم شهروند شو · لینک در بیو',540,1700);
+ x.font='400 36px '+F;x.fillText(location.host+location.pathname.replace(/index\.html$/,''),540,1770);
+ return c}
+let CARD='';
+async function shareCard(){try{const b=await (await fetch(CARD)).blob(),f=new File([b],'soran-citizen.png',{type:'image/png'});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:'من شهروند سوران‌شهر هستم 🏛️'});return}
+ const a=document.createElement('a');a.href=CARD;a.download='soran-citizen.png';a.click();toast('کارت ذخیره شد')}catch(e){if(e.name!=='AbortError')toast('روی عکس نگه دارید و Save Image بزنید')}}
 async function meV(){const{data:z}=await sb.from('citizens').select('*').maybeSingle();
- return z?`<div class="id"><small>کارت شهروندی سوران‌شهر</small><div>${esc(z.name)}</div><b>شمارهٔ ${fa(z.number)}</b><div>ساختمان ${fa(Math.ceil(z.number/50))} 🏠</div></div>`:`<div class="card"><b>🪪 شهروند شو</b><input id="cn" placeholder="نام شما" maxlength="40"><button class="w" onclick="regB()">دریافت کارت</button></div>`}
+ if(!z)return `<div class="card"><b>🪪 شهروند شو</b><p class="sub">با اسمت کارت شهروندی بگیر و ساختمانت رو پیدا کن.</p><input id="cn" placeholder="نام شما" maxlength="40"><button class="w" onclick="regB()">دریافت کارت</button></div>`;
+ const home=z.number<=cap(C);CARD=(await cardCanvas(z,home)).toDataURL('image/png');
+ return `${home?'':`<div class="card"><b class="warn">⏳ خانه‌ها پر است!</b><p class="sub">شهر ${fa(cap(C))} جا دارد و تو شمارهٔ ${fa(z.number)} هستی. هر فالوور جدید ۱۰۰ یورو به بودجه اضافه می‌کند؛ دوستانت را دعوت کن تا برایت خانه بسازیم.</p></div>`}<img src="${CARD}" alt="کارت شهروندی" style="width:100%;border-radius:16px;margin:8px 0"><button class="w" onclick="shareCard()">📤 اشتراک در استوری</button><p class="sub">اگه دکمه کار نکرد، روی عکس نگه دار و Save Image بزن.</p>`}
 async function draw(){try{C=await getCity();const f={city:cityV,vote:voteV,part:partV,me:meV}[tab];$('#v').innerHTML=await f();
  $('#nav').innerHTML=TABS.map(x=>`<button class="${x[0]===tab?'on':''}" onclick="tab='${x[0]}';draw()"><span>${x[1]}</span>${x[2]}</button>`).join('')}catch(e){$('#v').innerHTML='<div class="card warn">خطا در بارگذاری</div>'}}
 boot();
