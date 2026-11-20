@@ -1,0 +1,58 @@
+<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>سوران‌شهر</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;800&display=swap"><style>:root{--bg:#eaf5e4;--card:#fff;--tx:#14263a;--mu:#5d7083;--ac:#f5b400;--on:#14263a;--gn:#169c66;--rd:#d93a4a;--ln:#d3e3cb;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1a2e;--card:#12263f;--tx:#eaf1fb;--mu:#93a8c0;--ac:#ffd23f;--gn:#3ddc97;--rd:#ff6b78;--ln:#23415f;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.8 Vazirmatn,Tahoma,sans-serif;padding:env(safe-area-inset-top,0) 14px 96px;max-width:720px;margin-inline:auto}
+h1{font-size:20px;margin:14px 0 2px}h2{font-size:15px;margin:18px 0 8px}.sub{color:var(--mu);font-size:12px;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:16px;padding:12px;margin:10px 0}
+.hud{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.st{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:8px;text-align:center}
+.st b{display:block;font-size:16px}.st small{color:var(--mu);font-size:11px}
+.map{display:flex;flex-wrap:wrap;gap:4px;font-size:22px;line-height:1;margin-top:8px}.map i{font-style:normal;background:var(--bg);border-radius:8px;padding:5px}
+.bar{height:10px;border-radius:9px;background:var(--ln);overflow:hidden}.bar>span{display:block;height:100%;background:var(--gn)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+button,input,textarea{font:inherit;color:inherit}
+button{border:0;border-radius:12px;padding:9px 14px;background:var(--ac);color:var(--on);font-weight:700;cursor:pointer}
+button:disabled{opacity:.45}button.g{background:var(--bg);color:var(--tx);border:1px solid var(--ln)}button.w{width:100%}
+input{width:100%;padding:10px;border-radius:12px;border:1px solid var(--ln);background:var(--bg);margin:4px 0}
+.warn{color:var(--rd);font-weight:700}.ok{color:var(--gn);font-weight:700}.bd{background:var(--bg);border-radius:8px;padding:0 8px;font-size:11px;color:var(--mu)}
+nav{position:fixed;inset:auto 0 0 0;display:flex;background:var(--card);border-top:1px solid var(--ln);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+nav button{flex:1;background:none;color:var(--mu);font-size:11px;padding:6px 2px}nav button.on{color:var(--tx);background:var(--bg)}nav span{display:block;font-size:20px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:96px;background:var(--tx);color:var(--bg);padding:8px 16px;border-radius:20px;opacity:0;transition:.25s;pointer-events:none}#toast.s{opacity:1}
+.id{background:linear-gradient(135deg,#1c6b3a,#0b3a5e);color:#fff;border-radius:18px;padding:16px;margin:10px 0}.id b{font-size:24px;color:#ffd23f}
+</style></head><body>
+<h1>🏛️ سوران‌شهر</h1><p class="sub">شهری که شما می‌سازید</p><main id="v"></main><nav id="nav"></nav><div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script>const CFG={url:'https://puiiapaitvjrqfiigrsk.supabase.co',key:'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB1aWlhcGFpdHZqcnFmaWlncnNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUxNTIxNDQsImV4cCI6MjExMDcyODE0NH0.ymyBkJqZ7X8VD9JQ1r0e_x8ccBj8X7GVZBMtk4BOP2Y'};
+const sb=supabase.createClient(CFG.url,CFG.key);
+const $=s=>document.querySelector(s),fa=n=>Math.round(+n||0).toLocaleString('fa-IR');
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const T={house:['🏠','خانه',3300],fire:['🚒','آتش‌نشانی',12300],school:['🏫','مدرسه',12300],park:['🌳','پارک',6300],clinic:['🏥','درمانگاه',15300],bazaar:['🛍️','بازار',8300],mall:['🏬','ایران‌مال',80300]};
+const cap=c=>(c.buildings.house||0)*50;
+function toast(t){const e=$('#toast');e.textContent=t;e.className='s';clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='',2400)}
+async function getCity(){const{data,error}=await sb.from('city_state').select('*').single();if(error)throw error;return data}
+function cityHTML(c){const hl=Math.max(0,c.pop-cap(c));let t='';for(const k in T)for(let i=0;i<(c.buildings[k]||0);i++)t+=`<i>${T[k][0]}</i>`;
+ (c.buildings.custom||[]).forEach(x=>t+=`<i title="${esc(x.b)}">🏷️</i>`);
+ return `<div class="hud"><div class="st"><small>👥 جمعیت</small><b>${fa(c.pop)}</b><small>ظرفیت ${fa(cap(c))}</small></div><div class="st"><small>💶 بودجه</small><b>${fa(c.budget)}</b></div><div class="st"><small>🪙 پس‌انداز</small><b>${fa(c.savings)}</b></div><div class="st"><small>🍎 غذا</small><b>${fa(c.food)}</b></div><div class="st"><small>🎬 قسمت</small><b>${fa(c.episode)}</b></div><div class="st"><small>🏠 جای خالی</small><b>${fa(Math.max(0,cap(c)-c.pop))}</b></div></div>
+ <div class="card"><b>نقشهٔ شهر</b><div class="map">🏛️${t}</div>${hl?`<div class="warn">⚠️ ${fa(hl)} نفر بی‌خانه‌اند</div>`:''}</div>`}
+</script>
+<script>
+let tab='city',U,C;const TABS=[['city','🏙️','شهر'],['vote','🗳️','رأی'],['part','💬','مشارکت'],['me','🪪','من']];
+async function boot(){let{data:{session}}=await sb.auth.getSession();if(!session){const r=await sb.auth.signInAnonymously();if(r.error){$('#v').innerHTML='<div class="card warn">اتصال برقرار نشد</div>';return}session=r.data.session}U=session.user;draw()}
+async function act(p,ok){const{error}=await p;toast(error?'خطا؛ دوباره تلاش کنید':ok);draw()}
+const vote=id=>act(sb.rpc('cast_vote',{opt:id}),'رأی ثبت شد');
+function reqB(){const h=$('#rh').value.trim().replace(/^@/,''),b=$('#rb').value.trim();if(!h||!b)return toast('هر دو را بنویسید');act(sb.from('requests').insert({handle:h,building:b}),'ثبت شد؛ منتظر تأیید طراح')}
+async function cmB(){const t=$('#cm').value.trim();if(!t)return;const{data:z}=await sb.from('citizens').select('name').maybeSingle();act(sb.from('comments').insert({body:t,episode:C.episode,author:z?.name||'ناشناس'}),'نظر شما ارسال شد')}
+function regB(){const n=$('#cn').value.trim();if(!n)return toast('نام را بنویسید');act(sb.rpc('register_citizen',{n}),'کارت شما صادر شد')}
+async function cityV(){return cityHTML(C)}
+async function voteV(){const[{data:o},{data:r},{data:mv}]=await Promise.all([sb.from('poll_options').select('*').eq('active',true).eq('episode',C.episode).order('id'),sb.rpc('poll_results'),sb.from('votes').select('option_id').eq('user_id',U.id).eq('episode',C.episode).maybeSingle()]);
+ if(!o?.length)return '<div class="card">رأی‌گیری فعلاً بسته است.</div>';
+ const n=Object.fromEntries((r||[]).map(x=>[x.option_id,+x.total])),tot=Object.values(n).reduce((a,b)=>a+b,0)||1;
+ return '<div class="card"><b>🗳️ شهر بعدی چی بسازه؟</b>'+o.map(x=>{const p=Math.round(100*(n[x.id]||0)/tot);return `<div style="margin:12px 0"><div class="row"><span>${esc(x.label)}</span><b>${fa(p)}٪</b></div><div class="bar"><span style="width:${p}%"></span></div><button class="g" style="margin-top:6px" onclick="vote(${x.id})" ${mv?'disabled':''}>${mv?.option_id===x.id?'رأی شما ✓':'رأی من'}</button></div>`}).join('')+'</div>'}
+async function partV(){const{data:r}=await sb.from('requests').select('*').order('id',{ascending:false}).limit(10),S={pending:'در انتظار',approved:'تأیید شد',rejected:'رد شد'};
+ return `<div class="card"><b>🏗️ ساختمان خودت رو پیشنهاد بده</b><p class="sub">با هزینهٔ خودت می‌سازی و اسمت روی نقشه می‌ماند.</p><input id="rh" placeholder="آیدی اینستاگرام" maxlength="40"><input id="rb" placeholder="نام ساختمان" maxlength="60"><button class="w" onclick="reqB()">ثبت درخواست</button></div>
+ <div class="card"><b>💬 نظر یا پیشنهاد</b><input id="cm" placeholder="نظرت رو بنویس" maxlength="300"><button class="w" onclick="cmB()">ارسال</button></div>
+ ${(r||[]).map(x=>`<div class="card row"><span>🏷️ <b>${esc(x.building)}</b> · @${esc(x.handle)}</span><span class="bd">${S[x.status]}</span></div>`).join('')}`}
+async function meV(){const{data:z}=await sb.from('citizens').select('*').maybeSingle();
+ return z?`<div class="id"><small>کارت شهروندی سوران‌شهر</small><div>${esc(z.name)}</div><b>شمارهٔ ${fa(z.number)}</b><div>ساختمان ${fa(Math.ceil(z.number/50))} 🏠</div></div>`:`<div class="card"><b>🪪 شهروند شو</b><input id="cn" placeholder="نام شما" maxlength="40"><button class="w" onclick="regB()">دریافت کارت</button></div>`}
+async function draw(){try{C=await getCity();const f={city:cityV,vote:voteV,part:partV,me:meV}[tab];$('#v').innerHTML=await f();
+ $('#nav').innerHTML=TABS.map(x=>`<button class="${x[0]===tab?'on':''}" onclick="tab='${x[0]}';draw()"><span>${x[1]}</span>${x[2]}</button>`).join('')}catch(e){$('#v').innerHTML='<div class="card warn">خطا در بارگذاری</div>'}}
+boot();
+</script></body></html>
